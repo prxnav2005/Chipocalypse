@@ -1,6 +1,6 @@
 # Chipocalypse
 
-**Chipocalypse** is a CHIP-8 emulator implemented entirely in Verilog. It is designed to run purely in simulation, with no physical hardware required. The goal of this project is to build a working CHIP-8 system from scratch using digital design principles, and to serve as an educational platform for learning how low-level systems and emulators work.
+**Chipocalypse** is a CHIP-8 emulator implemented entirely in Verilog. It is designed to run purely in simulation, with no physical hardware required. The goal of this project is to build a working CHIP-8 system from scratch using digital design principles.
 
 ## About CHIP-8
 

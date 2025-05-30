@@ -52,15 +52,15 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 
 | Component       | Status       |
 |----------------|--------------|
-| Memory module  | Not started  |
-| CPU/Decoder    | Not started  |
+| Memory module  | Phase 1 complete |
+| CPU            | Phase 1 complete |
 | Display module | Not started  |
 | Input handler  | Not started  |
 | Timer module   | Not started  |
-| Top-level SoC  | Not started  |
-| Testbenches    | Not started  |
+| Top-level module  | Phase 1 complete |
+| Testbenches    | Phase 1 complete  |
 
-> Work is ongoing. This repository will be updated regularly as modules are developed.
+> Work is ongoing. This repository will be updated regularly as modules are developed. “Phase 1 complete” indicates implementation of first 4 basic opcodes and basic functionality has been verified in simulation (e.g., CPU fetching, memory interface, minimal display toggle, etc.).
 
 ## Reference
 

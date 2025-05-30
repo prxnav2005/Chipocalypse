@@ -69,5 +69,5 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 
 ## License
 
-This project is open source under the MIT License.
+This project is open source under the GPL License.
 

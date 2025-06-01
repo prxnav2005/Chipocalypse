@@ -8,6 +8,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
   reg [15:0] opcode;
   reg [2:0] state;
   reg [7:0] V [0:15];
+  reg [7:0] rand_val;
   integer i;
   
   localparam FETCH1 = 0;
@@ -38,6 +39,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
         begin
           mem_read <= 0;
           mem_write <= 0;
+          rand_val <= rand_val + 1;
           
           case(state)
             FETCH1: begin
@@ -52,7 +54,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
               // $display("FETCH2: opcode_hi = %h", mem_data_in);
               mem_addr_out <= pc + 1;
               mem_read <= 1;
-              state <= DECODE:
+              state <= DECODE;
             end
             
             DECODE: begin
@@ -110,6 +112,19 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                       mem_write <= 1;
                       state <= STORE_BCD_1;
                     end
+                    
+                    8'h1E: begin
+                      I <= I + V[opcode[11:8]];
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    8'h29: begin
+                      I <= V[opcode[11:8]] * 5;
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
                     
                     default: begin
                       pc <= pc + 2;
@@ -181,6 +196,47 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                     end
                   endcase
                 end
+                
+                4'h2: begin
+                  stack[sp] <= pc + 2;
+                  sp <= sp + 1;
+                  pc <= opcode[11:0];
+                  state <= FETCH1;
+                end
+                
+                4'hC: begin
+                  V[opcode[11:8]] <= rand_val & opcode[7:0];
+                  pc <= pc + 2;
+                  state <= FETCH1;
+                end
+                
+                4'hE: begin
+                  case(opcode[7:0])
+                    8'h9E: begin
+                      if(keys[V[opcode[11:8]]])
+                        pc <= pc + 4;
+                      else
+                        pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    8'hA1: begin
+                      if(~keys[V[opcode[11:8]]])
+                        pc <= pc + 4;
+                      else
+                        pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    default: begin
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                  endcase
+                end
+                
+                
+                
                 
                 STORE_BCD_1: begin
                   mem_addr_out <= I + 1;

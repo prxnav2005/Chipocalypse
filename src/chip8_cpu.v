@@ -2,7 +2,6 @@
 
 // The lines in grey are debug statements that I added for my own clarity.
 
-
 module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire [15:0] keys, output reg mem_read, output reg [11:0] mem_addr_out, output reg [2047:0] display, output reg [7:0] mem_data_out, output reg mem_write);
   
   reg [11:0] pc, I;
@@ -37,9 +36,9 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
         end
       else
         begin
-          
           mem_read <= 0;
           mem_write <= 0;
+          
           case(state)
             FETCH1: begin
               mem_addr_out <= pc;
@@ -53,7 +52,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
               // $display("FETCH2: opcode_hi = %h", mem_data_in);
               mem_addr_out <= pc + 1;
               mem_read <= 1;
-              state <= DECODE;
+              state <= DECODE:
             end
             
             DECODE: begin
@@ -62,24 +61,24 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
               state <= EXECUTE;
             end
             
-            EXECUTE: begin 
+            EXECUTE: begin
               case(opcode[15:12])
                 4'h0: begin
                   if(opcode == 16'h00E0)
                     begin
-                      display <= 2048'd0; // Clear display all at once
+                      display <= 2048'd0;
                     end
                   pc <= pc + 2;
                   state <= FETCH1;
                 end
                 
                 4'h1: begin
-                  pc <= opcode[11:0]; // Jump to address NNN
+                  pc <= opcode[11:0];
                   state <= FETCH1;
                 end
                 
                 4'h6: begin
-                  V[opcode[11:8]] <= opcode[7:0]; // LD Vx, NN
+                  V[opcode[11:8]] <= opcode[7:0];
                   pc <= pc + 2;
                   state <= FETCH1;
                 end
@@ -96,15 +95,15 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                   state <= FETCH1;
                 end
                 
-                4'hA: begin // ANNN
-                  I <= opcode[11:0]; 
+                4'hA: begin
+                  I <= opcode[11:0];
                   pc <= pc + 2;
                   state <= FETCH1;
                 end
                 
                 4'hF: begin
                   case(opcode[7:0])
-                    8'h33: begin // FX33
+                    8'h33: begin
                       bcd_value = V[opcode[11:8]];
                       mem_addr_out <= I;
                       mem_data_out <= V[opcode[11:8]] / 100;
@@ -118,23 +117,98 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                     end
                   endcase
                 end
-
-              STORE_BCD_1: begin
-              mem_addr_out <= I + 1;
-              mem_data_out <= (V[opcode[11:8]] % 100) / 10;
-              mem_write <= 1;
-              state <= STORE_BCD_2;
+                
+                4'h3: begin
+                  if (V[opcode[11:8]] == opcode[7:0])
+                    pc <= pc + 4;
+                  else
+                    pc <= pc + 2;
+                  state <= FETCH1;
+                end
+                
+                4'h4: begin
+                  if (V[opcode[11:8]] != opcode[7:0])
+                    pc <= pc + 4;
+                  else
+                    pc <= pc + 2;
+                  state <= FETCH1;
+                end
+                
+                4'h5: begin
+                  if (opcode[3:0] == 4'h0)
+                    begin
+                      if (V[opcode[11:8]] != V[opcode[7:4]])
+                        pc <= pc + 4;
+                      else
+                        pc <= pc + 2;
+                    end
+                  else 
+                    begin
+                      pc <= pc + 2;
+                    end
+                  state <= FETCH1;
+                end
+                
+                4'h8: begin
+                  case(opcode[3:0])
+                    4'h0: begin
+                      V[opcode[11:8]] <= V[opcode[7:4]];
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    4'h1: begin
+                      V[opcode[11:8]] <= V[opcode[11:8]] | V[opcode[7:4]];
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    4'h2: begin
+                      V[opcode[11:8]] <= V[opcode[11:8]] & V[opcode[7:4]];
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    4'h3: begin
+                      V[opcode[11:8]] <= V[opcode[11:8]] ^ V[opcode[7:4]];
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    default: begin
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                  endcase
+                end
+                
+                STORE_BCD_1: begin
+                  mem_addr_out <= I + 1;
+                  mem_data_out <= (V[opcode[11:8]] % 100) / 10;
+                  mem_write <= 1;
+                  state <= STORE_BCD_2;
+                end
+                
+                STORE_BCD_2: begin
+                  mem_addr_out <= I + 2;
+                  mem_data_out <= V[opcode[11:8]] % 10;
+                  mem_write <= 1;
+                  state <= STORE_BCD_3;
+                end
+                
+                STORE_BCD_3: begin
+                  pc <= pc + 2;
+                  state <= FETCH1;
+                end
+                
+                default: begin
+                  pc <= pc + 2;
+                  state <= FETCH1;
+                end
+              endcase
             end
             
-            STORE_BCD_2: begin
-              mem_addr_out <= I + 2;
-              mem_data_out <= V[opcode[11:8]] % 10;
-              mem_write <= 1;
-              state <= STORE_BCD_3;
-            end
-            
-            STORE_BCD_3: begin
-              pc <= pc + 2;
+            default: begin
               state <= FETCH1;
             end
           endcase
@@ -142,4 +216,6 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
     end
 endmodule
 
-  
+
+            
+  	

@@ -15,14 +15,15 @@ module chip8_keypad(input wire clk, reset, input wire [15:0] keys_raw, output re
       else
         begin
           keys_state <= keys_raw;
-          key_pressed <= (keys_raw != 16'd0);
-          
+          key_pressed <= 0;
           key_index <= 4'd0;
+          
           for(i = 0; i < 16; i = i + 1)
             begin
-              if(keys_raw[i])
+              if(keys_raw[i] && !key_pressed)
                 begin
                   key_index <= i[3:0];
+                  key_pressed <= 1;
                 end
             end
         end

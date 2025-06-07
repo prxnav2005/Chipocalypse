@@ -6,7 +6,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
   
   reg [11:0] pc, I, pixel_index;
   reg [15:0] opcode;
-  reg [2:0] state;
+  reg [4:0] state;
   reg [7:0] V [0:15];
   reg [7:0] rand_val, delay_timer, sprite_byte;
   reg [11:0] stack [0:15];
@@ -15,7 +15,8 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
   reg [3:0] draw_row;
   reg [2047:0] new_display;
   reg [5:0] x,y,bit_pos;
-  reg collision_flag;
+  reg [7:0] opcode_hi, bcd_value;
+  reg collision_flag,slow_tick,waiting_for_key;
   wire clock_tick;
   integer i;
   
@@ -33,8 +34,6 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
   localparam LOADS_REGS_0 = 11;
   localparam LOADS_REGS_1 = 12;
   
-  reg [7:0] opcode_hi, bcd_value;
-  
   always @(posedge clk or posedge reset)
     begin
       if(reset)
@@ -51,9 +50,26 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
           for(i = 0; i < 16; i = i+1)
             V[i] <= 8'd0;
           display <= 2048'd0;
+          clk_divider <= 0;
+          slow_tick <= 0;
+          delay_timer <= 0;
         end
       else
         begin
+          if(clk_divider == 1666666)
+            begin
+              clk_divider <= 0;
+              slow_tick <= 1;
+            end
+          else
+            begin
+              clk_divider <= clk_divider + 1;
+              slow_tick <= 0;
+            end
+          
+          if(slow_tick && delay_timer > 0)
+            delay_timer <= delay_timer - 1;
+          
           mem_read <= 0;
           mem_write <= 0;
           rand_val <= rand_val + 1;
@@ -171,13 +187,21 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                     end
                     
                     8'h0A: begin
-                      for(i = 0; i < 16; i = i + 1)
+                      if(!waiting_for_key)
                         begin
-                          if(keys[i])
+                          waiting_for_key <= i;
+                        end
+                      else
+                        begin
+                          for(i = 0; i < 16; i = i + 1)
                             begin
-                              V[opcode[11:8]] <= i;
-                              pc <= pc + 2;
-                              state <= FETCH1;
+                              if(keys[i])
+                                begin
+                                  V[opcode[11:8]] <= i;
+                                  pc <= pc + 2;
+                                  state <= FETCH1;
+                                  waiting_for_key <= 0;
+                                end
                             end
                         end
                     end
@@ -406,12 +430,12 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                   state <= STORE_REGS_0;
                 end
                 
-                LOADS_REG_0: begin
+                LOADS_REGS_0: begin
                   if(i <= opcode[11:8])
                     begin
                       mem_addr_out <= I + i;
                       mem_read <= 1;
-                      state <= LOAD_REGS_1;
+                      state <= LOADS_REGS_1;
                     end
                   else
                     begin
@@ -420,7 +444,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                     end
                 end
                 
-                LOADS_REG_1: begin
+                LOADS_REGS_1: begin
                   V[i] <= mem_data_in;
                   i <= i + 1;
                   state <= LOADS_REGS_0;

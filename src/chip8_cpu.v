@@ -1,5 +1,7 @@
 // Code your design here
 // Code your design here
+// Code your design here
+// Code your design here
 
 // The lines in grey are debug statements that I added for my own clarity.
 
@@ -27,8 +29,12 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
   localparam STORE_BCD_1 = 4;
   localparam STORE_BCD_2 = 5;
   localparam STORE_BCD_3 = 6;
-  localparam DRAW_SPITE = 7;
+  localparam DRAW_SPRITE = 7;
   localparam FETCH_SPRITE_BYTE = 8;
+  localparam STORE_REGS_0 = 9;
+  localparam STORE_REGS_1 = 10;
+  localparam LOADS_REGS_0 = 11;
+  localparam LOADS_REGS_1 = 12;
   
   reg [7:0] opcode_hi, bcd_value;
   
@@ -153,6 +159,30 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                       V[opcode[11:8]] <= delay_timer;
                       pc <= pc + 2;
                       state <= FETCH1;
+                    end
+                    
+                    8'h55: begin
+                      mem_addr_out <= I;
+                      i <= 0;
+                      state <= STORE_REGS_0;
+                    end
+                    
+                    8'h65: begin
+                      mem_addr_out <= I;
+                      i <= 0;
+                      state <= LOADS_REGS_0;
+                    end
+                    
+                    8'h0A: begin
+                      for(i = 0; i < 16; i = i + 1)
+                        begin
+                          if(keys[i])
+                            begin
+                              V[opcode[11:8]] <= i;
+                              pc <= pc + 2;
+                              state <= FETCH1;
+                            end
+                        end
                     end
                     
                     default: begin
@@ -324,13 +354,14 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                   else
                     begin
                       pc <= pc + 2;
-                      state <= FETCH1;
                     end
+                  state <= FETCH1;
+                end
                 
-                  4'hB: begin
-                    pc <= opcode[11:0] + V[0];
-                    state <= FETCH1;
-                  end
+                4'hB: begin
+                  pc <= opcode[11:0] + V[0];
+                  state <= FETCH1;
+                end
                 
                 STORE_BCD_1: begin
                   mem_addr_out <= I + 1;
@@ -356,6 +387,46 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                   mem_read <= 1;
                   mem_write <= 0;
                   state <= FETCH_SPRITE_BYTE;
+                end
+                
+                STORE_REGS_0: begin
+                  if(i <= opcode[11:8])
+                    begin
+                      mem_addr_out <= I + i;
+                      mem_data_out <= V[i];
+                      mem_write <= 1;
+                      state <= STORE_REGS_1;
+                    end
+                  else 
+                    begin
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                end
+                
+                STORE_REGS_1: begin
+                  i <= i + 1;
+                  state <= STORE_REGS_0;
+                end
+                
+                LOADS_REG_0: begin
+                  if(i <= opcode[11:8])
+                    begin
+                      mem_addr_out <= I + i;
+                      mem_read <= 1;
+                      state <= LOAD_REGS_1;
+                    end
+                  else
+                    begin
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                end
+                
+                LOADS_REG_1: begin
+                  V[i] <= mem_data_in;
+                  i <= i + 1;
+                  state <= LOADS_REGS_0;
                 end
                   
                 FETCH_SPRITE_BYTE: begin

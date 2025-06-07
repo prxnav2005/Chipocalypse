@@ -1,7 +1,4 @@
 // Code your design here
-// Code your design here
-// Code your design here
-// Code your design here
 
 // The lines in grey are debug statements that I added for my own clarity.
 

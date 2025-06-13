@@ -19,5 +19,3 @@ module chip8_mem(input wire clk, input wire [11:0] addr, output reg [7:0] data_o
       data_out = mem[addr];
     end
 endmodule
-
-  

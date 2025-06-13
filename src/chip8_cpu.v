@@ -8,15 +8,13 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
   reg [15:0] opcode;
   reg [4:0] state;
   reg [7:0] V [0:15];
-  reg [7:0] rand_val, delay_timer, sprite_byte;
+  reg [7:0] rand_val, delay_timer, sprite_byte, opcode_hi, bcd_value;
   reg [11:0] stack [0:15];
-  reg [3:0] sp;
+  reg [3:0] sp, draw_row, key_dest;
   reg [20:0] clk_divider;
-  reg [3:0] draw_row;
   reg [2047:0] new_display;
   reg [5:0] x,y,bit_pos;
-  reg [7:0] opcode_hi, bcd_value;
-  reg collision_flag,slow_tick,waiting_for_key;
+  reg collision_flag, slow_tick, waiting;
   wire clock_tick;
   integer i;
   
@@ -47,6 +45,9 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
           sp <= 0;
           collision_flag <= 0;
           new_display <= 2048'd0;
+          waiting <= 0;
+          key_dest <= 0;
+          rand_val <= 8'hAC;
           for(i = 0; i < 16; i = i+1)
             V[i] <= 8'd0;
           display <= 2048'd0;
@@ -187,9 +188,10 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                     end
                     
                     8'h0A: begin
-                      if(!waiting_for_key)
+                      if(!waiting)
                         begin
-                          waiting_for_key <= i;
+                          waiting <= 1;
+                          key_dest <= opcode[11:8];
                         end
                       else
                         begin
@@ -197,10 +199,10 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                             begin
                               if(keys[i])
                                 begin
-                                  V[opcode[11:8]] <= i;
+                                  V[key_dest] <= i;
                                   pc <= pc + 2;
                                   state <= FETCH1;
-                                  waiting_for_key <= 0;
+                                  waiting <= 0;
                                 end
                             end
                         end

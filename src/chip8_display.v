@@ -1,5 +1,5 @@
 // Code your design here
-module chip8_display(input wire clk, reset, input wire [5:0] x, input wire [4:0] y, input wire [3:0] row_index, input wire [7:0] sprite_data, input wire [2047:0] display_in, output reg [2047:0] display_out, output reg collision);
+module chip8_display(input wire clk, draw, input wire [5:0] x, input wire [4:0] y, input wire [3:0] row_index, input wire [7:0] sprite_data, input wire [2047:0] display_in, output reg [2047:0] display_out, output reg collision);
   
   integer i;
   reg [63:0] current_row, sprite_row, updated_row;
@@ -11,13 +11,17 @@ module chip8_display(input wire clk, reset, input wire [5:0] x, input wire [4:0]
   
   always @(*)
     begin
+      for(i = 0; i < 64; i = i + 1)
+        current_row[63 - i] = display_in[2047 - (row_start + i)];
+      
+      sprite_row = 64'd0;
       for(i = 0; i < 8; i = i + 1)
-        sprite_row[63 - ((x + i) % 64)] = sprite_data[7 - i]; 
+        sprite_row[63 - ((x + i) % 64)] = sprite_data[7 - i];
       
       updated_row = current_row ^ sprite_row;
       collision_next = |(current_row & sprite_row);
-      
       next_display = display_in;
+      
       for(i = 0; i < 64; i = i + 1)
         next_display[2047 - (row_start + i)] = updated_row[63 - i];
     end

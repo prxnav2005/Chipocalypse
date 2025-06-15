@@ -26,10 +26,12 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 
 ```
 /Chipocalypse
-├── src/
-├── tb/
-├── roms/ 
 ├── docs/
+├── gui/
+├── misc/
+├── roms/
+├── src/ 
+├── tb/
 ├── README.md 
 ```
 
@@ -40,27 +42,18 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 - A text editor or IDE for Verilog (e.g., VSCode + Verilog HDL plugin)
 - GTKWave (optional) for waveform viewing
 
-## Getting Started
-
-1. Clone this repository.
-2. Open your simulator of choice.
-3. Compile the modules and testbenches under `/src` and `/tb`.
-4. Run simulation with a sample ROM loaded into memory.
-5. Observe register values, memory state, and framebuffer activity.
 
 ## Status
 
-| Component       | Status       |
-|----------------|--------------|
-| Memory module  | Phase 1 complete |
-| CPU            | Phase 1 complete |
-| Display module | Phase 1 complete  |
-| Input handler  | Not started  |
-| Timer module   | Phase 1 complete |
-| Top-level module  | Phase 1 complete |
-| Testbenches    | Phase 1 complete  |
-
-> Work is ongoing. This repository will be updated regularly as modules are developed. “Phase 1 complete” indicates implementation of first 4 basic opcodes and basic functionality has been verified in simulation (e.g., CPU fetching, memory interface, minimal display toggle, etc.).
+| Component       | Status        |
+|----------------|---------------|
+| Memory module  | Complete      |
+| CPU            | Complete      |
+| Display module | Complete      |
+| Input handler  | In progress   |
+| Timer module   | Complete      |
+| Top-level module  | Complete   |
+| Testbenches    | Complete      |
 
 ## Reference
 

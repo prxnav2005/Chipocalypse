@@ -1,21 +1,23 @@
 // Code your design here
 
 // The lines in grey are debug statements that I added for my own clarity.
-
-module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire [15:0] keys, output reg mem_read, output reg [11:0] mem_addr_out, output reg [2047:0] display, output reg [7:0] mem_data_out, output reg mem_write);
+module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in, input wire [15:0] keys, input wire [2047:0] display_current, output reg mem_read, output reg [11:0] mem_addr_out, output reg [7:0] mem_data_out, sprite_data, output reg [5:0] draw_x, output reg [4:0] draw_y, output reg [3:0] draw_row_index, output reg mem_write, draw);
   
   reg [11:0] pc, I, pixel_index;
   reg [15:0] opcode;
   reg [4:0] state;
   reg [7:0] V [0:15];
-  reg [7:0] rand_val, delay_timer, sprite_byte, opcode_hi, bcd_value;
+  reg [7:0] rand_val, delay_timer, sprite_byte, opcode_hi, opcode_lo, bcd_value;
   reg [11:0] stack [0:15];
   reg [3:0] sp, draw_row, key_dest;
   reg [20:0] clk_divider;
   reg [2047:0] new_display;
   reg [5:0] x,y,bit_pos;
   reg collision_flag, slow_tick, waiting;
+  
   wire clock_tick;
+  wire [3:0] X = opcode[11:8];
+  wire [3:0] Y = opcode[7:4];
   integer i;
   
   localparam FETCH1 = 0;
@@ -31,6 +33,10 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
   localparam STORE_REGS_1 = 10;
   localparam LOADS_REGS_0 = 11;
   localparam LOADS_REGS_1 = 12;
+  localparam WAIT_DRAW = 13;
+  localparam FETCH3 = 14;
+  localparam WAIT_AFTER_SET_I = 15;
+  localparam WAIT_MEM = 16;
   
   always @(posedge clk or posedge reset)
     begin
@@ -38,7 +44,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
         begin
           pc <= 12'h200;
           state <= FETCH1;
-          mem_read <= 1;
+          mem_read <= 0;
           I <= 12'd0;
           opcode <= 16'd0;
           mem_write <= 0;
@@ -47,10 +53,16 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
           new_display <= 2048'd0;
           waiting <= 0;
           key_dest <= 0;
+          draw <= 0;
+          draw_row <= 0;
+          draw_row_index <= 0;
+          sprite_data <= 8'd0;
+          i <= 0;
+          opcode_hi <= 8'd0;
+          opcode_lo <= 8'd0;
           rand_val <= 8'hAC;
           for(i = 0; i < 16; i = i+1)
             V[i] <= 8'd0;
-          display <= 2048'd0;
           clk_divider <= 0;
           slow_tick <= 0;
           delay_timer <= 0;
@@ -79,21 +91,29 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
             FETCH1: begin
               mem_addr_out <= pc;
               mem_read <= 1;
-              // $display("FETCH1: pc = %h", pc);
+              $display("FETCH1: pc = %h", pc);
               state <= FETCH2;
             end
             
             FETCH2: begin
-              opcode_hi <= mem_data_in;
-              // $display("FETCH2: opcode_hi = %h", mem_data_in);
+              opcode_lo <= mem_data_in;
+              $display("FETCH2: opcode_lo = %h", mem_data_in);
               mem_addr_out <= pc + 1;
               mem_read <= 1;
+              state <= FETCH3;
+            end
+            
+            FETCH3: begin
+              opcode_hi <= mem_data_in;
+              $display("FETCH3: opcode_hi = %h", mem_data_in);
+              mem_read <= 0;
               state <= DECODE;
             end
             
             DECODE: begin
-              opcode <= {opcode_hi, mem_data_in};
-              // $display("DECODE: opcode = %h", {opcode_hi, mem_data_in});
+              opcode <= {opcode_hi, opcode_lo};
+              $display("DECODE: opcode = %h", {opcode_hi, opcode_lo});
+              $display("FETCHED OPCODE = %h at PC = %h", {opcode_hi, opcode_lo}, pc);
               state <= EXECUTE;
             end
             
@@ -102,7 +122,6 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                 4'h0: begin
                   if(opcode == 16'h00E0)
                     begin
-                      display <= 2048'd0;
                       pc <= pc + 2;
                     end
                   else if(opcode == 16'h00EE)
@@ -137,14 +156,26 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                 4'hD: begin
                   draw_row <= 0;
                   collision_flag <= 0;
-                  new_display <= display;
-                  state <= DRAW_SPRITE;
+                  draw_row_index <= 0;
+                  
+                  if(opcode[3:0] == 0)
+                    begin
+                      V[15] <= 0;
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                  else
+                    begin
+                      mem_addr_out <= I;
+                      mem_read <= 1;
+                      state <= FETCH_SPRITE_BYTE;
+                    end
                 end
-
+                  
                 4'hA: begin
                   I <= opcode[11:0];
                   pc <= pc + 2;
-                  state <= FETCH1;
+                  state <= WAIT_AFTER_SET_I;
                 end
                 
                 4'hF: begin
@@ -404,14 +435,7 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                   pc <= pc + 2;
                   state <= FETCH1;
                 end
-                  
-                DRAW_SPRITE: begin
-                  mem_addr_out <= I + draw_row;
-                  mem_read <= 1;
-                  mem_write <= 0;
-                  state <= FETCH_SPRITE_BYTE;
-                end
-                
+                                  
                 STORE_REGS_0: begin
                   if(i <= opcode[11:8])
                     begin
@@ -451,48 +475,60 @@ module chip8_cpu(input wire clk, reset, input wire [7:0] mem_data_in, input wire
                   i <= i + 1;
                   state <= LOADS_REGS_0;
                 end
-                  
-                FETCH_SPRITE_BYTE: begin
+                
+                WAIT_MEM: begin
                   mem_read <= 0;
-                  sprite_byte <= mem_data_in;
-                  for(bit_pos = 0; bit_pos < 8; bit_pos = bit_pos + 1)
-                    begin
-                      if(sprite_byte[7 - bit_pos])
-                        begin
-                          x = (V[opcode[11:8]] + bit_pos) % 64;
-                          y = (V[opcode[7:4]] + draw_row) % 32;
-                          pixel_index = y * 64 + x;
-                          
-                          if(new_display[pixel_index]) 
-                            collision_flag <= 1;
-                          
-                          new_display[pixel_index] <= new_display[pixel_index] ^ 1;
-                        end
-                    end
-                  
+                  draw_row_index <= draw_row + 1;
+                  state <= FETCH_SPRITE_BYTE;
+                end
+                
+                WAIT_DRAW: begin
+                  draw <= 0;
                   if(draw_row == opcode[3:0] - 1)
                     begin
-                      display <= new_display;
-                      V[15] <= collision_flag ? 1 : 0;
+                      V[15] <= collision;
                       pc <= pc + 2;
                       state <= FETCH1;
                     end
                   else
                     begin
                       draw_row <= draw_row + 1;
-                      state <= DRAW_SPRITE;
+                      mem_addr_out <= I + draw_row + 1;
+                      draw_row_index <= draw_row + 1;
+                      mem_read <= 1;
+                      state <= WAIT_MEM;
                     end
                 end
                 
+                WAIT_AFTER_SET_I: begin
+                  state <= FETCH1;
+                end
+                
+                DRAW_SPRITE: begin
+                  mem_read <= 0;
+                  draw <= 1;
+                  
+                  draw_x <= V[opcode[11:8]][5:0];
+                  draw_y <= V[opcode[7:4]][4:0];
+                  sprite_data <= sprite_byte;
+                  draw_row_index <= draw_row;
+                  state <= WAIT_DRAW;
+                end
+                
+                FETCH_SPRITE_BYTE: begin
+                  mem_read <= 0;
+                  sprite_data <= mem_data_in;
+                  draw_x <= V[opcode[11:8]][5:0]; 
+                  draw_y <= V[opcode[7:4]][4:0];
+                  draw_row_index <= draw_row;
+                  draw <= 1;
+                  state <= WAIT_DRAW;
+                end
+                
                 default: begin
-                  pc <= pc + 2;
                   state <= FETCH1;
                 end
               endcase
-            end
-            
-            default: begin
-              state <= FETCH1;
             end
           endcase
         end

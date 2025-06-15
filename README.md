@@ -59,6 +59,7 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 
 - [Cowgod's CHIP-8 Technical Reference](https://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
 - [CHIP-8 Instruction Set Reference PDF](https://johnearnest.github.io/Octo/docs/chip8ref.pdf)
+- [CHIP-8 Wikipedia](https://en.wikipedia.org/wiki/CHIP-8)
 
 ## License
 

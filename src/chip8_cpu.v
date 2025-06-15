@@ -91,13 +91,13 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
             FETCH1: begin
               mem_addr_out <= pc;
               mem_read <= 1;
-              $display("FETCH1: pc = %h", pc);
+              // $display("FETCH1: pc = %h", pc);
               state <= FETCH2;
             end
             
             FETCH2: begin
               opcode_lo <= mem_data_in;
-              $display("FETCH2: opcode_lo = %h", mem_data_in);
+              // $display("FETCH2: opcode_lo = %h", mem_data_in);
               mem_addr_out <= pc + 1;
               mem_read <= 1;
               state <= FETCH3;
@@ -105,15 +105,15 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
             
             FETCH3: begin
               opcode_hi <= mem_data_in;
-              $display("FETCH3: opcode_hi = %h", mem_data_in);
+              // $display("FETCH3: opcode_hi = %h", mem_data_in);
               mem_read <= 0;
               state <= DECODE;
             end
             
             DECODE: begin
               opcode <= {opcode_hi, opcode_lo};
-              $display("DECODE: opcode = %h", {opcode_hi, opcode_lo});
-              $display("FETCHED OPCODE = %h at PC = %h", {opcode_hi, opcode_lo}, pc);
+              // $display("DECODE: opcode = %h", {opcode_hi, opcode_lo});
+              // $display("FETCHED OPCODE = %h at PC = %h", {opcode_hi, opcode_lo}, pc);
               state <= EXECUTE;
             end
             

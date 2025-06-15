@@ -30,6 +30,7 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 ├── gui/
 ├── misc/
 ├── roms/
+├── scripts/
 ├── src/ 
 ├── tb/
 ├── README.md 

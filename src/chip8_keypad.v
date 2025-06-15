@@ -1,5 +1,4 @@
 // Code your design here
-
 module chip8_keypad(input wire clk, reset, input wire [15:0] keys_raw, output reg key_pressed, output reg [3:0] key_index, output reg [15:0] key_state);
   
   reg [15:0] prev_key_state;

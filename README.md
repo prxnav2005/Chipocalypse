@@ -50,7 +50,7 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 | Memory module  | Complete      |
 | CPU            | Complete      |
 | Display module | Complete      |
-| Input handler  | In progress   |
+| Input handler  | Complete  |
 | Timer module   | Complete      |
 | Top-level module  | Complete   |
 | Testbenches    | Complete      |

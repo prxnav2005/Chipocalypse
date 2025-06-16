@@ -7,7 +7,9 @@ if { $rom_file eq "" } {
 }
 
 open_project /home/prawns/CHIP8_Trial/CHIP8_Trial.xpr
-set_property -name "xelab.more_options" -value "+ROM=$rom_file" -objects [get_filesets sim_1]
+
+set_property -name {xsim.elaborate.xelab.more_options} -value "+ROM=$rom_file" -objects [get_filesets sim_1]
+
 launch_simulation
 run 50000000ns
 exit

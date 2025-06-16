@@ -1,4 +1,5 @@
 // Code your design here
+// Code your design here
 
 // The lines in grey are debug statements that I added for my own clarity.
 module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in, input wire [15:0] keys, input wire [2047:0] display_current, output reg mem_read, output reg [11:0] mem_addr_out, output reg [7:0] mem_data_out, sprite_data, output reg [5:0] draw_x, output reg [4:0] draw_y, output reg [3:0] draw_row_index, output reg mem_write, draw);
@@ -157,7 +158,9 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
                   draw_row <= 0;
                   collision_flag <= 0;
                   draw_row_index <= 0;
-                  
+
+                  $display("T=%0dns | DXYN | Vx=V[%0d]=%02h, Vy=V[%0d]=%02h, N=%0h, I=%03h", $time, opcode[11:8], V[opcode[11:8]], opcode[7:4], V[opcode[7:4]], opcode[3:0], I);
+
                   if(opcode[3:0] == 0)
                     begin
                       V[15] <= 0;
@@ -484,20 +487,12 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
                 
                 WAIT_DRAW: begin
                   draw <= 0;
+                  display <= new_display;
+                  draw_row <= draw_row + 1;
                   if(draw_row == opcode[3:0] - 1)
-                    begin
-                      V[15] <= collision;
-                      pc <= pc + 2;
-                      state <= FETCH1;
-                    end
+                    state <= FETCH1; 
                   else
-                    begin
-                      draw_row <= draw_row + 1;
-                      mem_addr_out <= I + draw_row + 1;
-                      draw_row_index <= draw_row + 1;
-                      mem_read <= 1;
-                      state <= WAIT_MEM;
-                    end
+                    state <= FETCH_SPRITE_BYTE;
                 end
                 
                 WAIT_AFTER_SET_I: begin

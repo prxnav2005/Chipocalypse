@@ -7,7 +7,8 @@ module chip8_top(input wire clk, reset, input wire [15:0] keys_raw, output wire 
   wire [15:0] key_state;
   wire [5:0] draw_x;
   wire [4:0] draw_y;
-  wire [2047:0] display_next, display_current;
+  wire [2047:0] display_next;
+  reg [2047:0] display_current;
   wire mem_read, key_pressed, draw, collision, load_delay, load_sound;
   
   chip8_mem mem(.clk(clk), .addr(mem_addr), .data_out(mem_data_out));
@@ -19,8 +20,16 @@ module chip8_top(input wire clk, reset, input wire [15:0] keys_raw, output wire 
   chip8_timer timer(.clk(clk), .reset(reset), .load_delay(load_delay), .load_sound(load_sound), .delay_in(delay_in), .sound_in(sound_in), .delay_out(delay_out), .sound_out(sound_out));
   
   chip8_cpu cpu(.clk(clk), .reset(reset), .mem_data_in(mem_data_out), .keys(key_state), .mem_read(mem_read), .mem_addr_out(mem_addr), .mem_data_out(mem_data_in), .mem_write(mem_write), .draw(draw), .draw_x(draw_x), .draw_y(draw_y), .draw_row_index(draw_row_index), .sprite_data(sprite_data), .collision(collision), .display_current(display_current));
-
+  
+  always @(posedge clk or posedge reset)
+    begin
+      if(reset)
+        display_current <= 2048'd0;
+      else if(draw)
+        display_current <= display_next;
+    end
+	
   assign mem_data_in = mem_data_out;
-  assign display = display_next;
+  assign display = display_current;
 
 endmodule

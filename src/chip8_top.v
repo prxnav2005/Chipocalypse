@@ -2,14 +2,14 @@
 module chip8_top(input wire clk, reset, input wire [15:0] keys_raw, output wire [2047:0] display);
   
   wire [11:0] mem_addr;
-  wire [7:0] mem_data_out, sprite_data, delay_in, sound_in, delay_out, sound_out;
+  wire [7:0] mem_data_in, mem_data_out, sprite_data, delay_in, sound_in, delay_out, sound_out;
   wire [3:0] key_index, draw_row_index;
   wire [15:0] key_state;
   wire [5:0] draw_x;
   wire [4:0] draw_y;
   wire [2047:0] display_next;
   reg [2047:0] display_current;
-  wire mem_read, key_pressed, draw, collision, load_delay, load_sound;
+  wire mem_read, key_pressed, draw, collision, load_delay, load_sound, mem_write;
   
   chip8_mem mem(.clk(clk), .addr(mem_addr), .data_out(mem_data_out));
   

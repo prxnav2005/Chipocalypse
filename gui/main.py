@@ -3,6 +3,7 @@
 import sys
 import pygame
 import time
+import subprocess
 
 pygame.init()
 
@@ -97,6 +98,20 @@ class Button:
 
     def is_click(self, event):
         return event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos)
+    
+def run_chip8_sim(game_name):
+    rom_paths = {
+        "Pong": "/home/prawns/Chipocalypse/roms/pong.mem",
+        "Tetris": "/home/prawns/Chipocalypse/roms/tetris.mem",
+        "TicTac": "/home/prawns/Chipocalypse/roms/tictac.mem"
+    }
+
+    rom = rom_paths.get(game_name)
+    if rom:
+        script_path = "/home/prawns/Chipocalypse/scripts/play.sh"
+        subprocess.run([script_path, rom])
+    else:
+        print("[ERROR] Invalid game selected.")
 
 buttons = [Button("Pong"), Button("Tetris"), Button("TicTac")]
 
@@ -135,7 +150,7 @@ def main_menu():
                 pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
             for btn in buttons:
                 if btn.is_click(event):
-                    print(f"Selected game: {btn.text}")
+                    run_chip8_sim(btn.text)
 
         for btn in buttons:
             btn.draw(screen)

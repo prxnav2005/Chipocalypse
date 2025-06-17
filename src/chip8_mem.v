@@ -1,11 +1,11 @@
 // Code your design here
+// Code your design here
 
 // The lines in grey are debug statements that I added for my own clarity.
 module chip8_mem(input wire clk, input wire [11:0] addr, output reg [7:0] data_out);
   
   reg [7:0] mem [0:4095];
   reg [7:0] fontset [0:79];
-  reg [1023:0] rom_file;
   integer i;
   
   initial
@@ -30,18 +30,10 @@ module chip8_mem(input wire clk, input wire [11:0] addr, output reg [7:0] data_o
       for(i = 0; i < 80; i = i + 1)
         mem[i] = fontset[i];
       
-      if($value$plusargs("ROM=%s", rom_file))
-        begin
-          $display("[INFO] Loading ROM: %s", rom_file);
-          $readmemh(rom_file, mem, 12'h200);
-        end
-      else
-        begin
-          $fatal(1, "[FATAL] No ROM file specified. Use +ROM=path/to/file.mem");
-        end
+      $display("[INFO] Loading ROM from: rom.mem");
+      $readmemh("rom.mem", mem, 12'h200);  // Load at 0x200
     end
   
   always @(posedge clk)
     data_out <= mem[addr];
-
 endmodule

@@ -5,7 +5,7 @@ module chip8_mem(input wire clk, input wire [11:0] addr, output reg [7:0] data_o
   
   reg [7:0] mem [0:4095];
   reg [7:0] fontset [0:79];
-  reg [255:0] rom_file;
+  reg [1023:0] rom_file;
   integer i;
   
   initial
@@ -41,7 +41,7 @@ module chip8_mem(input wire clk, input wire [11:0] addr, output reg [7:0] data_o
         end
     end
   
-  always @(posegde clk)
+  always @(posedge clk)
     data_out <= mem[addr];
 
 endmodule

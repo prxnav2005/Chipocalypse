@@ -98,7 +98,7 @@ class Button:
     def is_click(self, event):
         return event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos)
 
-buttons = [Button("Pong"), Button("Tetris"), Button("Snake")]
+buttons = [Button("Pong"), Button("Tetris"), Button("TicTac")]
 
 def main_menu():
     running = True

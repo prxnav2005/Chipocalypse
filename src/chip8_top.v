@@ -1,4 +1,3 @@
-// Code your design here
 module chip8_top(input wire clk, reset, input wire [15:0] keys_raw, output wire [2047:0] display);
   
   wire [11:0] mem_addr;
@@ -26,10 +25,13 @@ module chip8_top(input wire clk, reset, input wire [15:0] keys_raw, output wire 
       if(reset)
         display_current <= 2048'd0;
       else if(draw)
-        display_current <= display_next;
+        begin
+          display_current <= display_next;
+          $display("[TOP] draw=1 | sprite_data=%02h | x=%0d y=%0d row_index=%0d", sprite_data, draw_x, draw_y, draw_row_index);
+        end
+      else
+        display_current <= display_current;
     end
-	
-  assign mem_data_in = mem_data_out;
+  
   assign display = display_current;
-
 endmodule

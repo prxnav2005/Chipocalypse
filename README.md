@@ -1,26 +1,37 @@
 # Chipocalypse
 
-**Chipocalypse** is a CHIP-8 emulator implemented entirely in Verilog. It is designed to run purely in simulation, with no physical hardware required. The goal of this project is to build a working CHIP-8 system from scratch using digital design principles.
+**Chipocalypse** is a CHIP-8 emulator built entirely in **Verilog**, designed to run purely in simulation. It features a retro-style **Python GUI shell** that lets you choose from a set of classic CHIP-8 games(we can't play the game tho :( ) and visualize the output using simulation-generated frame dumps — no physical hardware is required.
 
-## About CHIP-8
+The emulator is supported by lightweight **Tcl scripts** for automating simulation in Vivado, and a **minimal shell interface** with basic commands to launch the GUI, check uptime, or exit cleanly.
 
-CHIP-8 is a simple interpreted programming language developed in the 1970s, commonly used to teach emulation and low-level system design. It features:
+## How It Works
 
-- 4KB memory space
-- 16 8-bit general purpose registers (V0–VF)
-- A 16-bit index register (I)
-- A program counter (PC) starting at 0x200
-- Stack and stack pointer
-- 64x32 monochrome display
-- 16-key hexadecimal keypad
-- Delay and sound timers (tick at 60Hz)
+1. **Launch GUI**: Run the `/play` command or `main.py` to launch a green CRT-style game selector built using Pygame.
+2. **Select Game**: Choose from `Pong`, `Tetris`, or `TicTac` (Tic-Tac-Toe). This triggers a backend Tcl script.
+3. **Simulate in Vivado**: The selected ROM is loaded and simulated using `chip8_tb.v`, and a `display_dump.txt` is generated.
+4. **Visualize Output**: The GUI parses and plays back frame-by-frame display output, simulating CHIP-8 screen behavior.
+5. **Basic Shell Commands that Chipocalypse supports**:
+   - `/play` – Launch the GUI game selector (Pong, Tetris, TicTac for now)
+   - `/uptime` – Show how long the session has been running 
+   - `/music` – Plays a fun background music  
+   - `/help` – See available commands and usage
+   - `/exit` – Exit the emulator shell  
 
-## Project Goals
+### Screenshot below illustrates GUI 
 
-- Implement a complete CHIP-8 emulator in Verilog
-- Simulate the display, memory, registers, stack, and timers
-- Load and run real CHIP-8 programs (ROMs) in simulation
-- Create simple testbenches for each module
+![GUI_Launch](./misc/gui_launch.png)
+
+---
+
+![GUI_Game](./misc/gui_game_chooser.png)
+
+The GUI and CLI together offer a clean way to run and inspect CHIP-8 ROM behavior via Verilog simulation — great for both testing and showcasing the design.
+
+## Tools Required
+
+- Vivado (for Verilog simulation)
+- VSCode (or any Verilog-compatible editor)
+- GTKWave (optional, for waveform viewing)
 
 ## Repository Structure
 
@@ -35,34 +46,9 @@ CHIP-8 is a simple interpreted programming language developed in the 1970s, comm
 ├── tb/
 ├── README.md 
 ```
-
-
-## Tools Required
-
-- Vivado, ModelSim, or any Verilog simulation tool
-- A text editor or IDE for Verilog (e.g., VSCode + Verilog HDL plugin)
-- GTKWave (optional) for waveform viewing
-
-
-## Status
-
-| Component       | Status        |
-|----------------|---------------|
-| Memory module  | Complete      |
-| CPU            | Complete      |
-| Display module | Complete      |
-| Input handler  | Complete  |
-| Timer module   | Complete      |
-| Top-level module  | Complete   |
-| Testbenches    | Complete      |
-
-## Reference
+## Referenc
 
 - [Cowgod's CHIP-8 Technical Reference](https://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
 - [CHIP-8 Instruction Set Reference PDF](https://johnearnest.github.io/Octo/docs/chip8ref.pdf)
 - [CHIP-8 Wikipedia](https://en.wikipedia.org/wiki/CHIP-8)
-
-## License
-
-This project is open source under the GPL License.
 

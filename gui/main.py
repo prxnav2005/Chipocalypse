@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import os
 import sys
 import pygame
 import time
@@ -99,6 +99,55 @@ class Button:
     def is_click(self, event):
         return event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos)
     
+def parse_display_dump(filename):
+    frames = []
+    with open(filename, "r") as f:
+        lines = f.readlines()
+
+    current_frame = []
+    for line in lines:
+        line = line.strip()
+        if line.startswith("Frame"):
+            if current_frame:
+                frames.append(current_frame)
+                current_frame = []
+        elif line == "":
+            continue
+        else:
+            current_frame.append([int(c) for c in line])
+    if current_frame:
+        frames.append(current_frame)
+    return frames
+
+def play_game_in_gui(frames):
+    SCALE = 10
+    DISPLAY_WIDTH = 64
+    DISPLAY_HEIGHT = 32
+    clock = pygame.time.Clock()
+    FRAME_DELAY = 100  # ms
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+
+        screen.fill((0, 0, 0))  # clear
+
+        for y in range(DISPLAY_HEIGHT):
+            for x in range(DISPLAY_WIDTH):
+                color = (0, 255, 0) if frames[0][y][x] else (0, 0, 0)
+                rect = pygame.Rect(x * SCALE, y * SCALE, SCALE, SCALE)
+                pygame.draw.rect(screen, color, rect)
+
+        pygame.display.flip()
+        pygame.time.delay(FRAME_DELAY)
+
+        # Optional: move to next frame (static for now)
+        if len(frames) > 1:
+            frames.append(frames.pop(0))  # cycle through frames
+
+    
 def run_chip8_sim(game_name):
     rom_paths = {
         "Pong": "/home/prawns/Chipocalypse/roms/pong.mem",
@@ -110,6 +159,13 @@ def run_chip8_sim(game_name):
     if rom:
         script_path = "/home/prawns/Chipocalypse/scripts/launch_sim.sh"
         subprocess.run([script_path, rom])
+
+        dump_file = "/home/prawns/CHIP8_Real/CHIP8_Real.sim/sim_1/behav/xsim/display_dump.txt"
+        if os.path.exists(dump_file):
+            frames = parse_display_dump(dump_file)
+            play_game_in_gui(frames)
+        else:
+            print("[ERROR] No display_dump.txt found.")
     else:
         print("[ERROR] Invalid game selected.")
 

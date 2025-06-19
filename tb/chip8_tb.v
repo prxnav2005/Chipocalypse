@@ -38,7 +38,7 @@ module chip8_tb;
       #100 keys_raw = 16'b0000_0000_0000_0010; // fake keypresses 
       #100 keys_raw = 16'b0;
       
-      repeat (20000)
+      repeat (50000)
         begin
           #10;
           $fwrite(f, "Frame %0d (Time: %0t)\n", frame, $time);

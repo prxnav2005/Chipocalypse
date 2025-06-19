@@ -1,78 +1,53 @@
-# CHIP-8 Instruction Set - Chipocalypse
+# CHIP-8 Instructions Implemented – Chipocalypse
 
-This file documents all standard CHIP-8 instructions, grouped by category and tracking implementation status.
+This document lists only the opcodes implemented in the Chipocalypse emulator.
 
-## Legend
+## Core Execution
 
-- [ ] Not implemented
-- [x] Implemented
-- [~] Partially implemented
+- `00E0` – Clear screen (CLS)
+- `00EE` – Return from subroutine (RET)
+- `1NNN` – Jump to address NNN
+- `2NNN` – Call subroutine at NNN
+- `3XNN` – Skip next if Vx == NN
+- `4XNN` – Skip next if Vx != NN
+- `5XY0` – Skip next if Vx == Vy
+- `6XNN` – Set Vx = NN
+- `7XNN` – Add NN to Vx
+- `8XY0` – Set Vx = Vy
+- `8XY1` – Set Vx = Vx OR Vy
+- `8XY2` – Set Vx = Vx AND Vy
+- `8XY3` – Set Vx = Vx XOR Vy
+- `8XY4` – Vx += Vy, set VF on carry
+- `8XY5` – Vx -= Vy, set VF on borrow
+- `8XY6` – Vx >>= 1, VF = LSB before shift
+- `8XY7` – Vx = Vy - Vx, set VF on borrow
+- `8XYE` – Vx <<= 1, VF = MSB before shift
+- `9XY0` – Skip next if Vx != Vy
+- `ANNN` – Set I = NNN
+- `BNNN` – Jump to NNN + V0
 
----
+## Graphics
 
-### 0x0NNN - System Instructions
+- `DXYN` – Draw N-byte sprite at (Vx, Vy), set VF on collision
 
-| Opcode     | Mnemonic      | Description                     | Status |
-|------------|---------------|---------------------------------|--------|
-| 00E0       | CLS           | Clear display                   | [ ]    |
-| 00EE       | RET           | Return from subroutine          | [ ]    |
-| 0NNN       | SYS addr      | Call RCA 1802 program at NNN    | [ ]    |
+## Input
 
-### 0x1NNN - Control Flow
+- `EX9E` – Skip if key in Vx is pressed
+- `EXA1` – Skip if key in Vx is not pressed
+- `FX0A` – Wait for key press, store in Vx
 
-| Opcode     | Mnemonic      | Description                     | Status |
-|------------|---------------|---------------------------------|--------|
-| 1NNN       | JP addr       | Jump to address NNN             | [ ]    |
-| 2NNN       | CALL addr     | Call subroutine at NNN          | [ ]    |
-| 3XNN       | SE Vx, NN     | Skip if Vx == NN                | [ ]    |
-| 4XNN       | SNE Vx, NN    | Skip if Vx != NN                | [ ]    |
+## Timers
 
-### 0x5–0x9 - Conditional / Arithmetic
+- `FX07` – Set Vx = delay timer
+- `FX15` – Set delay timer = Vx
+- `FX18` – Set sound timer = Vx
 
-| Opcode     | Mnemonic       | Description                   | Status |
-|------------|----------------|-------------------------------|--------|
-| 5XY0       | SE Vx, Vy      | Skip if Vx == Vy              | [ ]    |
-| 6XNN       | LD Vx, NN      | Set Vx = NN                   | [ ]    |
-| 7XNN       | ADD Vx, NN     | Vx += NN                      | [ ]    |
-| 8XY0–8XYE  | Various logic  | AND, OR, XOR, shifts, etc.    | [ ]    |
-| 9XY0       | SNE Vx, Vy     | Skip if Vx != Vy              | [ ]    |
+## Memory
 
-### 0xANNN–0xBNNN - Addressing
+- `FX1E` – Add Vx to I
+- `FX29` – Set I = sprite location for hex digit Vx
+- `FX33` – Store BCD of Vx at I, I+1, I+2
+- `FX55` – Store V0 to Vx in memory at I
+- `FX65` – Load V0 to Vx from memory at I
 
-| Opcode     | Mnemonic       | Description                   | Status |
-|------------|----------------|-------------------------------|--------|
-| ANNN       | LD I, NNN      | Set I = NNN                   | [ ]    |
-| BNNN       | JP V0 + NNN    | Jump to NNN + V0              | [ ]    |
-
-### 0xCXNN–0xDXYN - Random / Display
-
-| Opcode     | Mnemonic       | Description                   | Status |
-|------------|----------------|-------------------------------|--------|
-| CXNN       | RND Vx, NN     | Vx = rand() & NN              | [ ]    |
-| DXYN       | DRW Vx, Vy, N  | Draw N-byte sprite            | [ ]    |
-
-### 0xEX9E / 0xEXA1 - Keypad
-
-| Opcode     | Mnemonic       | Description                   | Status |
-|------------|----------------|-------------------------------|--------|
-| EX9E       | SKP Vx         | Skip if key Vx is pressed     | [ ]    |
-| EXA1       | SKNP Vx        | Skip if key Vx not pressed    | [ ]    |
-
-### 0xFX** - Timer / Memory / Input
-
-| Opcode     | Mnemonic       | Description                   | Status |
-|------------|----------------|-------------------------------|--------|
-| FX07       | LD Vx, DT      | Vx = delay timer              | [ ]    |
-| FX0A       | LD Vx, K       | Wait for key press            | [ ]    |
-| FX15       | LD DT, Vx      | Set delay timer = Vx          | [ ]    |
-| FX18       | LD ST, Vx      | Set sound timer = Vx          | [ ]    |
-| FX1E       | ADD I, Vx      | I += Vx                       | [ ]    |
-| FX29       | LD F, Vx       | Set I to sprite addr for Vx   | [ ]    |
-| FX33       | LD B, Vx       | Store BCD of Vx at I          | [ ]    |
-| FX55       | LD [I], Vx     | Store V0 to Vx in memory      | [ ]    |
-| FX65       | LD Vx, [I]     | Load V0 to Vx from memory     | [ ]    |
-
----
-
-> This list will be updated as instructions are implemented and tested.
 

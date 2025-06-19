@@ -1,4 +1,4 @@
-module chip8_mem(input wire clk, input wire [11:0] addr, output reg [7:0] data_out);
+module chip8_mem(input wire clk, write_en, input wire [11:0] addr, input wire [7:0] data_in, output reg [7:0] data_out);
   
   reg [7:0] mem [0:4095];
   reg [7:0] fontset [0:79];
@@ -28,8 +28,17 @@ module chip8_mem(input wire clk, input wire [11:0] addr, output reg [7:0] data_o
       
       $display("[INFO] Loading ROM from: rom.mem");
       $readmemh("rom.mem", mem, 12'h200);  // Load at 0x200
+      $display("[ROM] 0x200: %h %h (opcode: %h)", mem[12'h200], mem[12'h201], {mem[12'h200], mem[12'h201]});
+      $display("[ROM] 0x202: %h %h (opcode: %h)", mem[12'h202], mem[12'h203], {mem[12'h202], mem[12'h203]});
+      $display("[ROM] 0x204: %h %h (opcode: %h)", mem[12'h204], mem[12'h205], {mem[12'h204], mem[12'h205]});
+      $display("[ROM] 0x206: %h %h (opcode: %h)", mem[12'h206], mem[12'h207], {mem[12'h206], mem[12'h207]});
+      $display("[ROM] 0x208: %h %h (opcode: %h)", mem[12'h208], mem[12'h209], {mem[12'h208], mem[12'h209]});
     end
-  
+
   always @(posedge clk)
-    data_out <= mem[addr];
+    begin
+      if(write_en)
+        mem[addr] <= data_in;
+      data_out <= mem[addr];
+    end
 endmodule

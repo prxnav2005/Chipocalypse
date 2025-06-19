@@ -4,7 +4,7 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
   reg [15:0] opcode;
   reg [4:0] state;
   reg [7:0] V [0:15];
-  reg [7:0] rand_val, delay_timer, sprite_byte, opcode_hi, opcode_lo, bcd_value;
+  reg [7:0] rand_val, delay_timer, sprite_byte, opcode_hi, opcode_lo, bcd_value, sound_timer;
   reg [11:0] stack [0:15];
   reg [3:0] sp, draw_row, key_dest;
   reg [20:0] clk_divider;
@@ -64,6 +64,7 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
           clk_divider <= 0;
           slow_tick <= 0;
           delay_timer <= 0;
+          sound_timer <= 0;
         end
       else
         begin
@@ -78,8 +79,13 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
               slow_tick <= 0;
             end
           
-          if(slow_tick && delay_timer > 0)
-            delay_timer <= delay_timer - 1;
+          if(slow_tick)
+            begin
+              if(delay_timer > 0)
+                delay_timer <= delay_timer - 1;
+              if(sound_timer > 0)
+                sound_timer <= sound_timer - 1;
+            end
           
           mem_read <= 0;
           mem_write <= 0;
@@ -221,6 +227,18 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
                       mem_addr_out <= I;
                       i <= 0;
                       state <= LOADS_REGS_0;
+                    end
+                    
+                    8'h15: begin
+                      delay_timer <= V[opcode[11:8]];
+                      pc <= pc + 2;
+                      state <= FETCH1;
+                    end
+                    
+                    8'h18: begin
+                      sound_timer <= V[opcode[11:8]];
+                      pc <= pc + 2;
+                      state <= FETCH1;
                     end
                     
                     8'h0A: begin

@@ -1,3 +1,5 @@
+// Code your design here
+
 module chip8_top(input wire clk, reset, input wire [15:0] keys_raw, output wire [2047:0] display);
   
   wire [11:0] mem_addr;

@@ -1,3 +1,5 @@
+// Code your design here
+
 module chip8_mem(input wire clk, write_en, input wire [11:0] addr, input wire [7:0] data_in, output reg [7:0] data_out);
   
   reg [7:0] mem [0:4095];

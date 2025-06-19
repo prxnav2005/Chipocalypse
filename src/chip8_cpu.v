@@ -1,3 +1,7 @@
+// Code your design here
+
+// The lines in grey are debug statements that can be uncommented for debugging purposes and are added for clarity.
+
 module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in, input wire [15:0] keys, input wire [2047:0] display_current, output reg mem_read, output reg [11:0] mem_addr_out, output reg [7:0] mem_data_out, sprite_data, output reg [5:0] draw_x, output reg [4:0] draw_y, output reg [3:0] draw_row_index, output reg mem_write, draw);
   
   reg [11:0] pc, I, pixel_index;
@@ -95,32 +99,32 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
             FETCH1: begin
               mem_addr_out <= pc;
               mem_read <= 1;
-              $display("FETCH1: pc = %h", pc);
+              // $display("FETCH1: pc = %h", pc);
               state <= FETCH1_WAIT;
             end
             
             FETCH1_WAIT: begin
-              $display("FETCH1_WAIT: opcode_hi = %h", mem_data_in);
+              // $display("FETCH1_WAIT: opcode_hi = %h", mem_data_in);
               state <= FETCH2;
             end
             
             FETCH2: begin
               opcode_hi <= mem_data_in;
-              $display("FETCH2: received opcode_hi = %h", mem_data_in);
+              // $display("FETCH2: received opcode_hi = %h", mem_data_in);
               mem_addr_out <= pc + 1;
               mem_read <= 1;
               state <= FETCH2_WAIT;
             end
             
             FETCH2_WAIT: begin
-              $display("FETCH2_WAIT: opcode_lo = %h", mem_data_in);
+              // $display("FETCH2_WAIT: opcode_lo = %h", mem_data_in);
               state <= FETCH3;
             end
             
             FETCH3: begin
               opcode_lo <= mem_data_in;
               opcode <= {opcode_hi, mem_data_in};
-              $display("FETCH3: received opcode_lo = %h, full opcode = %h",mem_data_in, {opcode_hi,mem_data_in});
+              // $display("FETCH3: received opcode_lo = %h, full opcode = %h",mem_data_in, {opcode_hi,mem_data_in});
               mem_read <= 0;
               pc <= pc + 2;
               state <= EXECUTE;
@@ -167,7 +171,7 @@ module chip8_cpu(input wire clk, reset, collision, input wire [7:0] mem_data_in,
                   collision_flag <= 0;
                   draw_row_index <= 0;
 
-                  $display("T=%0dns | DXYN | Vx=V[%0d]=%02h, Vy=V[%0d]=%02h, N=%0h, I=%03h", $time, opcode[11:8], V[opcode[11:8]], opcode[7:4], V[opcode[7:4]], opcode[3:0], I);
+                  // $display("T=%0dns | DXYN | Vx=V[%0d]=%02h, Vy=V[%0d]=%02h, N=%0h, I=%03h", $time, opcode[11:8], V[opcode[11:8]], opcode[7:4], V[opcode[7:4]], opcode[3:0], I);
 
                   if(opcode[3:0] == 0)
                     begin

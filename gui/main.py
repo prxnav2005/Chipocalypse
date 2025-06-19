@@ -107,16 +107,17 @@ def parse_display_dump(filename):
     current_frame = []
     for line in lines:
         line = line.strip()
-        if line.startswith("Frame"):
+        if line.startswith("Frame") or line.startswith("PC:") or not line or any(c not in "01" for c in line):
             if current_frame:
                 frames.append(current_frame)
                 current_frame = []
-        elif line == "":
             continue
-        else:
-            current_frame.append([int(c) for c in line])
+
+        current_frame.append([int(c) for c in line])
+
     if current_frame:
         frames.append(current_frame)
+
     return frames
 
 def play_game_in_gui(frames):
@@ -143,9 +144,8 @@ def play_game_in_gui(frames):
         pygame.display.flip()
         pygame.time.delay(FRAME_DELAY)
 
-        # Optional: move to next frame (static for now)
         if len(frames) > 1:
-            frames.append(frames.pop(0))  # cycle through frames
+            frames.append(frames.pop(0)) 
 
     
 def run_chip8_sim(game_name):
@@ -160,7 +160,7 @@ def run_chip8_sim(game_name):
         script_path = "/home/prawns/Chipocalypse/scripts/launch_sim.sh"
         subprocess.run([script_path, rom])
 
-        dump_file = "/home/prawns/CHIP8_Real/CHIP8_Real.sim/sim_1/behav/xsim/display_dump.txt"
+        dump_file = "/home/prawns/CHIP8_Real/CHIP8_Real.sim/sim_1/behav/xsim/display_dump.txt" # ask mentees to change this path 
         if os.path.exists(dump_file):
             frames = parse_display_dump(dump_file)
             play_game_in_gui(frames)
@@ -186,11 +186,9 @@ def main_menu():
         title = TITLE_FONT.render("CHOOSE YOUR GAME", True, TEXT_COLOR)
         title_rect = title.get_rect(center=(width // 2, 50))
 
-        # Compute total width: all button widths + gaps between them
         total_width = len(buttons) * button_width + (len(buttons) - 1) * gap
         start_x = (width - total_width) // 2
 
-        # Update button positions
         for i, btn in enumerate(buttons):
             x = start_x + i * (button_width + gap)
             y = center_y

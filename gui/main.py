@@ -108,7 +108,7 @@ def run_chip8_sim(game_name):
 
     rom = rom_paths.get(game_name)
     if rom:
-        script_path = "/home/prawns/Chipocalypse/scripts/play.sh"
+        script_path = "/home/prawns/Chipocalypse/scripts/launch_sim.sh"
         subprocess.run([script_path, rom])
     else:
         print("[ERROR] Invalid game selected.")

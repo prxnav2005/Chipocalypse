@@ -46,7 +46,7 @@ The GUI and CLI together offer a clean way to run and inspect CHIP-8 ROM behavio
 ├── tb/
 ├── README.md 
 ```
-## Referenc
+## Reference
 
 - [Cowgod's CHIP-8 Technical Reference](https://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
 - [CHIP-8 Instruction Set Reference PDF](https://johnearnest.github.io/Octo/docs/chip8ref.pdf)

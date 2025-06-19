@@ -1,3 +1,6 @@
+// Code your testbench here
+// or browse Examples
+
 module chip8_tb;
   
   reg clk = 0;

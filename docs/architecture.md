@@ -4,7 +4,7 @@ This document outlines the overall system design of the CHIP-8 emulator implemen
 
 ## Overview
 
-CHIP-8 is a simple, bytecode-based virtual machine originally designed for 1970s microcomputers. This project replicates the entire CHIP-8 system in Verilog, including memory, instruction decoding, control flow, timers, and display — all for simulation.
+CHIP-8 is a simple, bytecode-based virtual machine originally designed for 1970s microcomputers. This project replicates the entire CHIP-8 system in Verilog — including memory, instruction decoding, control flow, timers, and display — all for simulation.
 
 ## Block Diagram
 
@@ -28,38 +28,32 @@ CHIP-8 is a simple, bytecode-based virtual machine originally designed for 1970s
       v    v     v    v
     Timers ALU  Display  Keypad
 
-
 ## Module Descriptions
 
 ### `chip8_memory.v`
 - 4KB memory (`reg [7:0] mem [0:4095]`)
-- Initial font data (0x050 to 0x09F)
-- ROMs are loaded starting at 0x200
+- Fontset stored at 0x050–0x09F
+- ROMs are loaded starting at address 0x200
 
 ### `chip8_cpu.v`
 - Controls the fetch-decode-execute cycle
-- Handles all CHIP-8 instructions
-- Interfaces with memory, timers, and display
+- Handles all CHIP-8 opcodes
+- Interfaces with memory, timers, display, and keypad
 
 ### `chip8_display.v`
 - 64×32 monochrome frame buffer
-- Draws sprites using XOR
-- Collision detection sets VF register
-
-### `chip8_timer.v`
-- Delay and sound timers (8-bit, decrement at 60Hz)
-- Countdown tick triggered by simulation clock divider
+- Draws sprites using XOR logic
+- Collision detection sets the VF register
 
 ### `chip8_keypad.v`
-- Simulated 16-key hex keypad
-- Input can be triggered through simulation testbench
+- 16-key hex keypad (0–F)
+- Inputs triggered through simulation or GUI
 
 ## Execution Flow
 
-1. ROM is loaded into memory at 0x200
-2. CPU starts at PC = 0x200
+1. ROM is loaded into memory at address 0x200
+2. CPU begins execution from PC = 0x200
 3. On each clock tick:
-   - Fetch 2-byte opcode from memory
-   - Decode opcode type
-   - Execute instruction (may access memory, display, or timers)
-
+   - Fetch a 2-byte opcode from memory
+   - Decode the opcode
+   - Execute the instruction (may affect memory, timers, display, or input)

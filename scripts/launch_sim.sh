@@ -1,11 +1,11 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(dirname "$0")"
-ROM_FILE="$(realpath "$SCRIPT_DIR/../$1")"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+ROM_FILE="$1"                         # accept absolute OR relative path
 
-if [ -z "$1" ]; then
+if [ -z "$ROM_FILE" ]; then
   echo "[ERROR] No ROM file given!"
-  echo "Usage: ./play.sh <relative_path_to_rom_inside_project>"
+  echo "Usage: launch_sim.sh <path_to_rom.mem>"
   exit 1
 fi
 

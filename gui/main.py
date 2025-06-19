@@ -124,8 +124,10 @@ def play_game_in_gui(frames):
     SCALE = 10
     DISPLAY_WIDTH = 64
     DISPLAY_HEIGHT = 32
+    FRAME_RATE = 10 # frames per second
+
     clock = pygame.time.Clock()
-    FRAME_DELAY = 100  # ms
+    frame_index = 0
 
     while True:
         for event in pygame.event.get():
@@ -135,18 +137,18 @@ def play_game_in_gui(frames):
 
         screen.fill((0, 0, 0))  # clear
 
+        current_frame = frames[frame_index % len(frames)]
+
         for y in range(DISPLAY_HEIGHT):
             for x in range(DISPLAY_WIDTH):
-                color = (0, 255, 0) if frames[0][y][x] else (0, 0, 0)
+                color = (0, 255, 0) if current_frame[y][x] else (0, 0, 0)
                 rect = pygame.Rect(x * SCALE, y * SCALE, SCALE, SCALE)
                 pygame.draw.rect(screen, color, rect)
 
         pygame.display.flip()
-        pygame.time.delay(FRAME_DELAY)
 
-        if len(frames) > 1:
-            frames.append(frames.pop(0)) 
-
+        frame_index += 1
+        clock.tick(FRAME_RATE)
     
 def run_chip8_sim(game_name):
     rom_paths = {
